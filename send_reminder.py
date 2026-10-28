@@ -36,10 +36,6 @@ def check_telegram_commands():
         last_update_id = update['update_id']
         message = update.get('message', {})
         text = message.get('text', '')
-        
-        # Отвечаем на любое сообщение, чтобы вы видели, что бот жив
-        if text and not text.startswith('/start'):
-            send_message(f"Я получил ваше сообщение: {text}")
             
         # Если пришла команда /add
         if text.startswith('/add'):
@@ -102,5 +98,3 @@ if __name__ == "__main__":
     check_telegram_commands()
     check_reminders()
     
-    if os.environ.get('GITHUB_EVENT_NAME') == 'workflow_dispatch':
-        send_message("✅ Скрипт запущен вручную и работает!")
