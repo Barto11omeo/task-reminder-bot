@@ -2,6 +2,7 @@ import os
 import json
 import requests
 from datetime import datetime, timedelta, timezone
+from zoneinfo import ZoneInfo
 
 # Берем токен и Chat ID из секретов GitHub
 TOKEN = os.environ.get('TELEGRAM_TOKEN')
@@ -83,7 +84,8 @@ def check_reminders():
         if task.get('done') or task.get('notified'):
             continue
             
-        task_time = datetime.strptime(task['time'], "%Y-%m-%d %H:%M").replace(tzinfo=timezone.utc)
+        moscow_tz = ZoneInfo("Europe/Moscow")
+        task_time = datetime.strptime(task['time'], "%Y-%m-%d %H:%M").replace(tzinfo=moscow_tz).astimezone(timezone.utc)
         diff = task_time - now
         
         if timedelta(minutes=55) <= diff <= timedelta(minutes=65):
