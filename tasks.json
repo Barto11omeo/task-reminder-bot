@@ -28,5 +28,11 @@
     "time": "2026-10-29 03:15",
     "done": false,
     "notified": true
+  },
+  {
+    "title": "Новая задача",
+    "time": "2026-10-30 15:30",
+    "done": false,
+    "notified": false
   }
 ]
