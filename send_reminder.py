@@ -36,11 +36,22 @@ def check_telegram_commands():
         last_update_id = update['update_id']
         message = update.get('message', {})
         text = message.get('text', '')
-            
+
+             # Если пришла команда /tasks
+       if text == '/tasks':
+         if not tasks:
+             send_message("📭 Список задач пуст.")
+         else:
+             message = "📋 Ваши задачи:\n\n"
+             for i, t in enumerate(tasks, 1):
+                 status = "✅" if t.get('done') else "⏳"
+                 message += f"{i}. {status} {t['title']} — {t['time']}\n"
+             send_message(message)
+             
         # Если пришла команда /add
-        if text.startswith('/add'):
-            try:
-                parts = text[4:].strip().rsplit(' ', 2)
+          if text.startswith('/add'):
+          try:
+          parts = text[4:].strip().rsplit(' ', 2)
                 title = parts[0]
                 date_str = parts[1]
                 time_str = parts[2]
