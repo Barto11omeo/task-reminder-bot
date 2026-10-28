@@ -36,9 +36,12 @@ def check_telegram_commands():
         message = update.get('message', {})
         text = message.get('text', '')
         
+        # Отвечаем на любое сообщение, чтобы вы видели, что бот жив
+        if text and not text.startswith('/start'):
+            send_message(f"Я получил ваше сообщение: {text}")
+            
         # Если пришла команда /add
         if text.startswith('/add'):
-            # Формат: /add Купить хлеб 2026-12-31 18:00
             try:
                 parts = text[4:].strip().rsplit(' ', 2)
                 title = parts[0]
@@ -46,7 +49,6 @@ def check_telegram_commands():
                 time_str = parts[2]
                 
                 task_time = f"{date_str} {time_str}"
-                # Проверяем, правильный ли формат времени
                 datetime.strptime(task_time, "%Y-%m-%d %H:%M")
                 
                 tasks.append({
@@ -63,7 +65,7 @@ def check_telegram_commands():
     with open('tasks.json', 'w', encoding='utf-8') as f:
         json.dump(tasks, f, ensure_ascii=False, indent=2)
         
-    # Запоминаем, что мы прочитали эти сообщения, чтобы не добавлять их дважды
+    # Запоминаем, что мы прочитали эти сообщения
     if last_update_id > 0:
         requests.get(f"https://api.telegram.org/bot{TOKEN}/getUpdates?offset={last_update_id + 1}")
 
@@ -84,7 +86,6 @@ def check_reminders():
         task_time = datetime.strptime(task['time'], "%Y-%m-%d %H:%M").replace(tzinfo=timezone.utc)
         diff = task_time - now
         
-        # Если до задачи осталось от 55 до 65 минут
         if timedelta(minutes=55) <= diff <= timedelta(minutes=65):
             text = f"🔔 Напоминание!\n\nЗадача: {task['title']}\nВремя: {task['time']}"
             send_message(text)
@@ -99,6 +100,5 @@ if __name__ == "__main__":
     check_telegram_commands()
     check_reminders()
     
-    # Если запускаем вручную, отправим тестовое сообщение
     if os.environ.get('GITHUB_EVENT_NAME') == 'workflow_dispatch':
-        send_message("✅ Бот обновлен! Теперь я умею принимать команды.")
+        send_message("✅ Скрипт запущен вручную и работает!")
