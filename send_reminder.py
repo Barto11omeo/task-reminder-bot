@@ -60,13 +60,10 @@ def check_telegram_commands():
         # 2. Команда /delete (например, /delete 1)
         if text.startswith('/delete'):
             try:
-                # Берем номер из команды
                 index = int(text.split(' ')[1]) - 1
-                # Сортируем так же, как при выводе
                 sorted_tasks = sorted(tasks, key=lambda x: datetime.strptime(x['time'], "%Y-%m-%d %H:%M"))
                 
                 if 0 <= index < len(sorted_tasks):
-                    # Находим эту задачу в основном списке и удаляем
                     task_to_remove = sorted_tasks[index]
                     tasks.remove(task_to_remove)
                     send_message(f"🗑 Задача «{task_to_remove['title']}» удалена.\n\n" + format_tasks_list(tasks))
@@ -81,15 +78,13 @@ def check_telegram_commands():
             try:
                 parts = text[4:].strip().rsplit(' ', 2)
                 title = parts[0]
-                date_str = parts[1] # Например, 29.10
-                time_str = parts[2] # Например, 03.15
+                date_str = parts[1]
+                time_str = parts[2]
                 
-                # Собираем в формат ГГГГ-ММ-ДД ЧЧ:ММ (год 2026)
                 day, month = date_str.split('.')
                 hour, minute = time_str.split('.')
                 task_time = f"2026-{month}-{day} {hour}:{minute}"
                 
-                # Проверяем, что время корректное
                 datetime.strptime(task_time, "%Y-%m-%d %H:%M")
                 
                 tasks.append({
@@ -99,7 +94,6 @@ def check_telegram_commands():
                     "notified": False
                 })
                 
-                # Выводим подтверждение и сразу обновленный список
                 send_message(f"✅ Задача «{title}» добавлена.\n\n" + format_tasks_list(tasks))
                 
             except Exception:
@@ -113,6 +107,7 @@ def check_telegram_commands():
         requests.get(f"https://api.telegram.org/bot{TOKEN}/getUpdates?offset={last_update_id + 1}")
 
 def check_reminders():
+    """Проверяет напоминания и удаляет прошедшие задачи"""
     if not os.path.exists('tasks.json'):
         return
 
@@ -121,24 +116,34 @@ def check_reminders():
 
     now = datetime.now(timezone.utc)
     updated = False
+    cleaned_tasks = []
     
     for task in tasks:
-        if task.get('done') or task.get('notified'):
-            continue
-            
         moscow_tz = ZoneInfo("Europe/Moscow")
         task_time = datetime.strptime(task['time'], "%Y-%m-%d %H:%M").replace(tzinfo=moscow_tz).astimezone(timezone.utc)
-        diff = task_time - now
         
-        if timedelta(minutes=45) <= diff <= timedelta(minutes=75):
-            text = f"🔔 Напоминание!\n\nЗадача: {task['title']}\nВремя: {task['time']}"
-            send_message(text)
-            task['notified'] = True
+        # АВТОУДАЛЕНИЕ: Если задача уже прошла, не добавляем её в новый список
+        if task_time < now:
+            print(f"Удалена прошедшая задача: {task['title']}")
             updated = True
+            continue
+            
+        # Оставляем задачу в списке
+        cleaned_tasks.append(task)
+        
+        # ОТПРАВКА НАПОМИНАНИЯ (если еще не отправляли)
+        if not task.get('done') and not task.get('notified'):
+            diff = task_time - now
+            if timedelta(minutes=45) <= diff <= timedelta(minutes=75):
+                text = f"🔔 Напоминание!\n\nЗадача: {task['title']}\nВремя: {task['time']}"
+                send_message(text)
+                task['notified'] = True
+                updated = True
 
+    # Если были изменения (удалили или отправили напоминание) - сохраняем
     if updated:
         with open('tasks.json', 'w', encoding='utf-8') as f:
-            json.dump(tasks, f, ensure_ascii=False, indent=2)
+            json.dump(cleaned_tasks, f, ensure_ascii=False, indent=2)
 
 if __name__ == "__main__":
     check_telegram_commands()
