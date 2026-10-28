@@ -2,13 +2,17 @@ name: Task Reminder
 
 on:
   schedule:
-    # Запуск каждые 15 минут (со сдвигом, чтобы не попасть на перегрузку серверов)
-    - cron: '5,20,35,50 * * * *'
-  workflow_dispatch: # Это позволит запускать скрипт вручную кнопкой
+    # Запуск каждые 5 минут (чтобы бот быстро реагировал на команды)
+    - cron: '*/5 * * * *'
+  workflow_dispatch: # Ручной запуск
 
 jobs:
   check-tasks:
     runs-on: ubuntu-latest
+    # Даем разрешение на сохранение изменений в файлах
+    permissions:
+      contents: write
+
     steps:
       - name: Скачиваем код репозитория
         uses: actions/checkout@v4
@@ -26,3 +30,11 @@ jobs:
           TELEGRAM_TOKEN: ${{ secrets.TELEGRAM_TOKEN }}
           TELEGRAM_CHAT_ID: ${{ secrets.TELEGRAM_CHAT_ID }}
         run: python send_reminder.py
+
+      - name: Сохраняем изменения (новые задачи) обратно в GitHub
+        run: |
+          git config --global user.name 'GitHub Action Bot'
+          git config --global user.email 'action@github.com'
+          git add tasks.json
+          git diff --quiet && git diff --staged --quiet || git commit -m "Auto-update tasks [skip ci]"
+          git push
