@@ -21,6 +21,7 @@ def check_telegram_commands():
         return
 
     updates = response.get('result', [])
+    print(f"Бот проснулся. Найдено сообщений: {len(updates)}")
     last_update_id = 0
     
     # Загружаем текущие задачи
