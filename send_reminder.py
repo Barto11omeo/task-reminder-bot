@@ -36,22 +36,23 @@ def check_telegram_commands():
         last_update_id = update['update_id']
         message = update.get('message', {})
         text = message.get('text', '')
-
-             # Если пришла команда /tasks
-       if text == '/tasks':
-         if not tasks:
-             send_message("📭 Список задач пуст.")
-         else:
-             message = "📋 Ваши задачи:\n\n"
-             for i, t in enumerate(tasks, 1):
-                 status = "✅" if t.get('done') else "⏳"
-                 message += f"{i}. {status} {t['title']} — {t['time']}\n"
-             send_message(message)
-             
-        # Если пришла команда /add
-          if text.startswith('/add'):
-          try:
-          parts = text[4:].strip().rsplit(' ', 2)
+        
+        # 1. Команда /tasks (показать все задачи)
+        if text == '/tasks':
+            if not tasks:
+                send_message("📭 Список задач пуст.")
+            else:
+                msg = "📋 Ваши задачи:\n\n"
+                for i, t in enumerate(tasks, 1):
+                    status = "✅" if t.get('done') else "⏳"
+                    msg += f"{i}. {status} {t['title']} — {t['time']}\n"
+                send_message(msg)
+            continue # Переходим к следующему сообщению
+            
+        # 2. Команда /add (добавить задачу)
+        if text.startswith('/add'):
+            try:
+                parts = text[4:].strip().rsplit(' ', 2)
                 title = parts[0]
                 date_str = parts[1]
                 time_str = parts[2]
@@ -95,6 +96,7 @@ def check_reminders():
         task_time = datetime.strptime(task['time'], "%Y-%m-%d %H:%M").replace(tzinfo=moscow_tz).astimezone(timezone.utc)
         diff = task_time - now
         
+        # Окно от 45 до 75 минут
         if timedelta(minutes=45) <= diff <= timedelta(minutes=75):
             text = f"🔔 Напоминание!\n\nЗадача: {task['title']}\nВремя: {task['time']}"
             send_message(text)
@@ -108,4 +110,3 @@ def check_reminders():
 if __name__ == "__main__":
     check_telegram_commands()
     check_reminders()
-    
