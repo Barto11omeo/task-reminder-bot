@@ -28,5 +28,11 @@
     "time": "2026-12-31 18:00",
     "done": false,
     "notified": false
+  },
+  {
+    "title": "Полить цветы",
+    "time": "2026-12-31 21:00",
+    "done": false,
+    "notified": false
   }
 ]
