@@ -88,7 +88,7 @@ def check_reminders():
         task_time = datetime.strptime(task['time'], "%Y-%m-%d %H:%M").replace(tzinfo=moscow_tz).astimezone(timezone.utc)
         diff = task_time - now
         
-        if timedelta(minutes=55) <= diff <= timedelta(minutes=65):
+        if timedelta(minutes=45) <= diff <= timedelta(minutes=75):
             text = f"🔔 Напоминание!\n\nЗадача: {task['title']}\nВремя: {task['time']}"
             send_message(text)
             task['notified'] = True
