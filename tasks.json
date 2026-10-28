@@ -1,1 +1,14 @@
-[]
+[
+  {
+    "title": "Купить хлеб",
+    "time": "2026-10-29 03:50",
+    "done": false,
+    "notified": true
+  },
+  {
+    "title": "Утреняя проверка",
+    "time": "2026-10-29 08:50",
+    "done": false,
+    "notified": false
+  }
+]
