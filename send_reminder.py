@@ -72,9 +72,26 @@ def check_telegram_commands():
         message = update.get('message', {})
         text = message.get('text', '')
         
+        # 1. Команда /help или /start
+        if text == '/help' or text == '/start':
+            help_text = (
+                "🤖 *Мои команды:*\n\n"
+                "➕ /add Название ДД.ММ ЧЧ.ММ — добавить задачу\n"
+                "   _Пример: /add Купить хлеб 29.10 18.00_\n\n"
+                "📋 /tasks — показать все задачи\n\n"
+                "🗑 /delete НОМЕР — удалить задачу по номеру\n"
+                "   _Пример: /delete 1_\n\n"
+                "ℹ️ /help — показать это сообщение"
+            )
+            send_message(help_text)
+            continue
+
+        # 2. Команда /tasks
         if text == '/tasks':
             send_message(format_tasks_list(tasks))
+            continue
             
+        # 3. Команда /delete
         elif text.startswith('/delete'):
             try:
                 index = int(text.split(' ')[1]) - 1
@@ -89,13 +106,15 @@ def check_telegram_commands():
                     send_message("❌ Задачи с таким номером не существует.")
             except Exception:
                 send_message("❌ Ошибка. Формат: /delete НОМЕР")
+                continue
                 
+        # 4. Команда /add
         elif text.startswith('/add'):
             try:
                 parts = text[4:].strip().rsplit(' ', 2)
                 title = parts[0]
                 date_str = parts[1]
-                time_str = parts[2]
+                time_str = parts[2].replace(':', '.')
                 
                 day, month = date_str.split('.')
                 hour, minute = time_str.split('.')
@@ -133,7 +152,8 @@ def check_reminders():
         task_time = datetime.strptime(task['time'], "%Y-%m-%d %H:%M").replace(tzinfo=moscow_tz).astimezone(timezone.utc)
         diff = task_time - now
         
-        if timedelta(minutes=45) <= diff <= timedelta(minutes=75):
+        # НОВЫЙ ДИАПАЗОН: от 0 до 60 минут
+        if timedelta(minutes=0) <= diff <= timedelta(minutes=60):
             text = f"🔔 Напоминание!\n\nЗадача: {task['title']}\nВремя: {task['time']}"
             send_message(text)
             task['notified'] = True
