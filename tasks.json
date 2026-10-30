@@ -4,5 +4,11 @@
     "time": "2026-11-02 9:00",
     "done": false,
     "notified": false
+  },
+  {
+    "title": "Кирюха",
+    "time": "2026-10-30 17:00",
+    "done": false,
+    "notified": false
   }
 ]
